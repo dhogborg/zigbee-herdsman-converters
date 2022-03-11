@@ -257,12 +257,15 @@ module.exports = [
         fromZigbee: [fz.identify, fz.metering, fz.electrical_measurement, fz.ignore_basic_report, fz.ignore_genOta, fz.legrand_power_alarm],
         toZigbee: [tz.legrand_settingAlwaysEnableLed, tz.legrand_identify, tz.electrical_measurement_power, tz.legrand_powerAlarm],
         exposes: [e.power().withAccess(ea.STATE_GET), exposes.binary('power_alarm_active', ea.STATE, true, false),
-            exposes.binary('power_alarm', ea.ALL, true, false).withDescription('Enable/disable the power alarm')],
+            exposes.binary('power_alarm', ea.ALL, true, false).withDescription('Enable/disable the power alarm'),
+            e.apparentPower()
+        ],
         configure: async (device, coordinatorEndpoint, logger) => {
             const endpoint = device.getEndpoint(1);
             await reporting.bind(endpoint, coordinatorEndpoint, ['haElectricalMeasurement', 'genIdentify']);
             await reporting.readEletricalMeasurementMultiplierDivisors(endpoint);
             await reporting.activePower(endpoint);
+            await reporting.apparentPower(endpoint)
             // Read configuration values that are not sent periodically as well as current power (activePower).
             await endpoint.read('haElectricalMeasurement', ['activePower', 0xf000, 0xf001, 0xf002]);
         },
